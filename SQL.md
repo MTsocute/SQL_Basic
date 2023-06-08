@@ -146,14 +146,7 @@ CREATE TABLE Addressbook (
 DROP TABLE <表名>;
 ~~~
 
-<<<<<<< HEAD
 ### 2. 添建表的一列
-=======
-### ==2. 表定义的更新==
-
-#### 添建表的一列
->>>>>>> parent of 46017ce (Update SQL.md)
-
 ```sql
 ALTER TABLE <表名> ADD COLUMN <列定义>;
 ```
@@ -164,56 +157,29 @@ eg.
 ALTER TABLE <表名> ADD COLUMN product_name_pinyin VARCHAR(100) NOT NULL;
 ```
 
-<<<<<<< HEAD
 ### 3. 删除表的一列
-=======
-#### 删除表的一列
->>>>>>> parent of 46017ce (Update SQL.md)
-
 ```sql
 ALTER TABLE <表名> DROP COLUMN <列名>;
 ```
 
-<<<<<<< HEAD
 ### 4. 变更表名
-=======
-eg.
-
-```sql
-ALTER TABLE <表名> DROP COLUMN product_name_pinyin;
-```
-
-#### 变更表名
->>>>>>> parent of 46017ce (Update SQL.md)
-
 ```sql
 ALTER TABLE <表名> RENAME TO <表名>;
 ```
 
-<<<<<<< HEAD
 ### 5. 参看表的结构
-=======
-#### 参看表的结构
->>>>>>> parent of 46017ce (Update SQL.md)
-
 ```sql
 DESCRIBE <表名>;
 ```
 
 ![image-20230529171205807](https://cdn.jsdelivr.net/gh/MTsocute/Image_Hosting_Platform@main/uPic/image-20230529171205807.png)
 
-<<<<<<< HEAD
 ### 6. 修改表的名字
-=======
-#### 修改表的名字
->>>>>>> parent of 46017ce (Update SQL.md)
-
 ```sql
 RENAME TABLE <表名> TO <表名>;
 ```
 
-<<<<<<< HEAD
-### 7. 完表格中添加一列记录
+### 7. 向表格中添加一列记录
 
 ```sql
 # 指定列的插入数据
@@ -242,6 +208,23 @@ WHERE <条件>;
 ```
 
 ![image-20230603124511497](https://cdn.jsdelivr.net/gh/MTsocute/Image_Hosting_Platform@main/uPic/image-20230603124511497.png)
+
+### ==10. 修改表中某一列的属性==
+
+```sql
+ALTER TABLE <表名>
+ALTER COLUMN <列名> 
+SET DEFAULT <默认值>;
+```
+
+### 11. 删除表的一条记录
+
+```sql
+DELETE FROM <表名>
+WHERE <条件>;
+```
+
+
 
 # 第二章
 
@@ -724,7 +707,7 @@ SELECT MAX(regist_date), MIN(regist_date) FROM Product;
 
 ----
 
-> 假设，我们现在要找出我们一共有多少个类型的商品（product_type），但是 COUNT 函数并不会区分类别，有多少个就记多少，我们如何剔除重复的呢？s
+> 假设，我们现在要找出我们一共有多少个类型的商品（product_type），但是 COUNT 函数并不会区分类别，有多少个就记多少，我们如何剔除重复的呢？
 
 - 解决方法：
 
@@ -1080,5 +1063,369 @@ ORDER BY 3 DESC, 1;
 
 ---
 
-=======
->>>>>>> parent of 46017ce (Update SQL.md)
+## 4-1 数据的插入
+
+<br>
+
+### 1. **INSERT** 语句的基本语法
+
+---
+#### 1.1 单值的插入
+
+```sql
+# 一次插入一个数据
+INSERT INTO <表名> ( 列1, 列2, 列3, ....) VALUES ( 值1, 值2, 值3, ....);
+```
+
+#### ==1.2 多值的插入==
+
+```sql
+# 一次性插入多组数据
+INSERT INTO <表名> ( 列1, 列2, 列3, ....) 
+VALUES 
+( 值1, 值2, 值3, ....),
+( 值1, 值2, 值3, ....),
+( 值1, 值2, 值3, ....), ....;
+```
+
+#### ==1.3 省略的插入（默认全部值都要赋值）==
+
+```sql
+# 列 () 不写
+INSERT INTO <表名>
+VALUES 
+( 值1, 值2, 值3, ....),
+( 值1, 值2, 值3, ....),
+( 值1, 值2, 值3, ....), ....;
+```
+
+
+
+### ==2. 插入默认值==
+
+---
+
+> 我们可以在设置 Table 的属性的时候，对于某个列，赋予默认值**(Default)**
+
+#### 2.1 创建一个具有默认值的表
+
+```sql
+CREATE TABLE ProductIns
+(
+  product_id CHAR(4) NOT NULL,
+	sale_price INTEGER DEFAULT 0, -- 销售单价设置默认值为 0;
+	PRIMARY KEY (product_id)
+);
+```
+
+- 默认值使用的方法一般有**显式和隐式**
+- 建议使用显式的方法，因为这样可以一目了然地知道 sale_price列使用了默认值
+- **如果省略了没有设定默认值的列，该列的值就会被设定为 NULL**
+
+#### 2.2 通过显式的方法插入默认值
+
+```sql
+INSERT INTO ProductIns 
+(product_id, product_name, product_type, sale_price, purchase_price, regist_date) 
+VALUES
+(7, '洗菜板', '厨房用具', 
+ DEFAULT	-- 我们在 CREATE 的时候已经用过了 DEFAULT 默认一个值，所以使用就会是默认值了
+ , 790, '2009-04-28');
+```
+
+#### 2.3 通过隐式的方法插入默认值
+
+```sql
+INSERT INTO ProductIns 
+(product_id, product_name, product_type, 
+ -- 记得也要忽略列
+ purchase_price, regist_date) 
+VALUES
+(7, '洗菜板', '厨房用具', 
+ 	-- 写也不写，就会用默认的了
+ 790, '2009-04-28');
+```
+
+<br>
+
+### ==3. 从其他表中复制数据==
+
+---
+
+#### 3.1 按列拷贝数据
+
+```sql
+-- 使用方法
+INSERT INTO <要插入数据的表名> (<需要的列名>, ...)
+SELECT <被索取方的列1>, <被索取方的列2>, ...
+FROM <索取数据的表名>
+```
+
+- 创建一个用于复制其他数据的表
+
+```sql
+CREATE TABLE ProductCopy
+(
+  product_id CHAR(4) NOT NULL,
+	product_name VARCHAR(100) NOT NULL,
+	product_type VARCHAR(32) NOT NULL,
+	sale_price INTEGER DEFAULT 0,
+	purchase_price INTEGER ,
+	regist_date DATE ,
+	PRIMARY KEY (product_id)
+);
+```
+
+- 从其他表中拷贝数据
+
+```sql
+INSERT INTO ProductCopy 
+(product_id, product_name, product_type, sale_price, purchase_price, regist_date)
+SELECT 
+product_id, product_name, product_type, sale_price, purchase_price, regist_date
+FROM Product;
+```
+
+![image-20230607212254206](https://cdn.jsdelivr.net/gh/MTsocute/Image_Hosting_Platform@main/uPic/image-20230607212254206.png)
+
+#### 3.2 其中的 select 方法仍然是可以使用很多其他子句的
+
+> 该 INSERT语句中的 SELECT语句，也可以使用 WHERE子句 或者 GROUP BY子句等
+
+- 分类汇总出，不同产品类型的总价的表
+
+```sql
+-- 创建一个表，里面存储不同类型对应的售价，进货价的总和
+CREATE TABLE ProductType
+(
+  product_type VARCHAR(32) NOT NULL,
+	sum_sale_price INTEGER ,
+	sum_purchase_price INTEGER ,
+	PRIMARY KEY (product_type)
+);
+```
+
+```sql
+-- 利用 select + group by 实现对应填充数据
+INSERT INTO ProductType 
+(product type, sum sale price,sum purchase price)
+SELECT product type, SUM(sale_price) SUM(purchase_price)
+FROM Product
+GROUP BY product type;
+```
+
+![image-20230607213447936](https://cdn.jsdelivr.net/gh/MTsocute/Image_Hosting_Platform@main/uPic/image-20230607213447936.png)
+
+<br>
+
+## 4-2 数据的删除
+
+---
+
+<br>
+
+### 1. DELETE 语句的基础语法
+
+---
+
+#### 1.1 删除所有数据但是保留数据表
+
+```sql
+DELETE FROM <表名>;
+```
+
+#### 1.2 只能用来删除所有数据的 TRUNCATE
+
+```sql
+TRUNCATE <表名>;
+```
+
+
+
+### 2. 删除指定条件的部分数据
+
+---
+
+```sql
+DELETE FROM <表名>
+WHERE <条件>;
+```
+
+e.g. 删除售价 >= 4000 的商品
+
+```sql
+DELETE FROM Product
+WHERE sale_price >= 4000;
+```
+
+<br>
+
+## 4-3 数据的更新
+
+---
+
+<br>
+
+### 1. UPDATE 基础语法
+
+---
+
+#### 1.1 修改所有的数据
+
+
+```sql
+UPDATE <表名>
+SET <列名> = <表达式>;
+```
+
+e.g. 修改所有日期为 '2010-10-12'
+
+```sql
+UPDATE Product
+SET regist_date = '2010-10-12';
+```
+
+
+
+#### 1.2 指定条件的 UPDATE
+
+```sql
+UPDATE <表名>
+SET <列名> = <表达式>
+WHERE <条件>;
+```
+
+
+
+### 2. 使用 NULL 进行更新
+
+---
+
+- 没错，还可以利用 把存在的数据更替 NULL（前提属性是非 NOT NULL）
+
+```sql
+-- 把销售ID 为 8 记录的生产日期标注为 NULL
+UPDATE Product
+SET regist_date = NULL
+WHERE product_id = 8;
+```
+
+<br>
+
+### 3. 多列更新
+
+---
+
+- UPDATE语句的 SET子句支持同时将多个列作为更新对象
+
+#### 3.1 使用逗号的方式修改多列数据
+
+```sql
+UPDATE Product
+-- set 同一时间修改了两列数据
+SET 
+	sale_price = sale_price * 10,
+	purchase_price = purchase_price / 2
+WHERE product_type = ' ';
+```
+
+#### 3.2 使用( )的方式修改多列数据
+
+```sql
+UPDATE Product
+SET -- 前面括号写列名，后面括号写对应修改值
+(sale_price, purchase_price) = (sale_price * 10, purchase_price / 2)
+WHERE product_type = ' ';
+```
+
+- 第二种方法并适用于所有的DBMS
+
+<br>
+
+## ==4-4 事务==
+
+---
+
+> 事务是对表中数据进行更新的单位。简单来讲，事务就是**需要在同一个处理单元中执行的一系列更新处理的集合**。
+>
+> 对表的数据进行更新需要使用 **INSERT、UPDATE 和 DELETE** 三种语句，但是更新处理不是只需要执行一次操作就行，而是一系列的连续操作，这个时候，事务就体现出他的价值来了。
+>
+> - 遇到这种需要在同一个处理单元中执行一系列更新操作的情况，一定要使用事务来进行处理
+> - 一个事务中包含多少个更新处理或者包含哪些处理，在 DBMS 中并没有固定的标准，而是根据用户的要求决定的
+
+### 1. 创建事务
+
+---
+
+#### 1.1 事务的语法
+
+![image-20230608144339533](https://cdn.jsdelivr.net/gh/MTsocute/Image_Hosting_Platform@main/uPic/image-20230608144339533.png)
+
+- 在**标准 SQL 中并没有定义事务的开始语句**，而是由各个 DBMS 自己来定义的
+
+```sql
+● -- SQL Server、PostgreSQL
+BEGIN TRANSACTION
+
+● -- MySQL
+START TRANSACTION
+```
+
+#### 1.2 事务使用的 DEMO
+
+```sql
+START TRANSACTION;
+UPDATE Product
+SET sale_price = sale_price + 1000, purchase_price = purchase_price * 0.2;
+COMMIT;
+```
+
+
+
+#### ==1.3 COMMIT -- 提交处理==
+
+---
+
+> COMMIT是交事务包含的全部更新处理的结束指令，相当于文件处理中的覆盖保存。**一旦提交 ，就无法恢复到事务开始前的状态了**
+
+![image-20230608145254285](https://cdn.jsdelivr.net/gh/MTsocute/Image_Hosting_Platform@main/uPic/image-20230608145254285.png)
+
+<img src="https://cdn.jsdelivr.net/gh/MTsocute/Image_Hosting_Platform@main/uPic/image-20230608153913275.png" alt="image-20230608153913275" style="zoom:66%;" />
+
+<br>
+
+#### ==1.4 ROLLBACK -- 取消处理==
+
+---
+
+> 这个语法就是，START TRANSACTION 之后，我们做了任何操作都是可以 ROLLBACK 的，但是如果我们 COMMIT 之后，再ROLLBACK 就不行了
+
+<img src="https://cdn.jsdelivr.net/gh/MTsocute/Image_Hosting_Platform@main/uPic/image-20230608145923568.png" alt="image-20230608145923568" style="zoom:80%;" />
+
+```sql
+START TRANSACTION;
+UPDATE Product
+SET sale_price = sale_price + 1000, purchase_price = purchase_price * 0.2;
+ROLLBACK;
+```
+
+e.g. 误操纵，使用 ROLLBACK;
+
+```sql
+-- 开始一个事务
+BEGIN TRANSACTION;
+
+-- 提高Product A的价格
+UPDATE Products SET Price = Price + 2.00 WHERE ProductID = 1;
+
+-- 提高Product B的价格
+UPDATE Products SET Price = Price + 3.00 WHERE ProductID = 2;
+
+-- 错误的操作：尝试提高Product C的价格（假设ProductID为3的行不存在）
+UPDATE Products SET Price = Price + 5.00 WHERE ProductID = 3;
+
+-- 回滚事务
+ROLLBACK;
+```
+
+- 通过使用ROLLBACK命令，数据库会回滚到事务开始之前的状态，因此"Product A"和"Product B"的价格修改会被撤销，**数据库恢复到事务开始之前的状态**。
